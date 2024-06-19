@@ -2,3 +2,6 @@
 name: Install and Config fail2ban
 hosts: all
 become: yes
+
+roles: 
+  - fail2ban
