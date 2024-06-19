@@ -1,0 +1,86 @@
+---
+# tasks file for fal2ban
+
+- name: Ping with Server
+  ping:
+
+- name: Install epel-release
+  yum: 
+    name: epel-release
+    state: install
+  when: ansible_os_family == "RedHat"
+
+- name: Install fail2ban
+  apt: 
+    name: update
+    state: install
+  when: ansible_os_family == "Debian"
+
+- name: Install fail2ban
+  yum: 
+    name: fail2ban
+    state: install
+  when: ansible_os_family == "RedHat"
+
+- name: Install fail2ban
+  apt: 
+    name: fail2ban
+    state: install
+  when: ansible_os_family == "Debian"
+
+- name: Enable fail2ban
+  shell: systemctl enable fail2ban
+
+- name: Start fail2ban
+  shell: systemctl start fail2ban
+
+- name: Make .cfg file for RedHat
+  copy: 
+    dest: /etc/fail2ban/jail.d/defauly.conf
+    content:
+      [DEFAULT]
+      maxretry = {{ maxretry_my }}
+      findtime = {{ findtime_my }}
+      bantime = {{ bantime_my }}
+      action = firewallcmd-ipset
+      ignoreip = {{ ignoreip_my }}
+    when: ansible_os_family == "RedHat"
+
+- name: Make .cfg file for Debian
+  copy: 
+    dest: /etc/fail2ban/jail.d/defauly.conf
+    content:
+      [DEFAULT]
+      maxretry = {{ maxretry_my }}
+      findtime = {{ findtime_my }}
+      bantime = {{ bantime_my }}
+      action = firewallcmd-ipset
+      ignoreip = {{ ignoreip_my }}
+    when: ansible_os_family == "Debian"
+
+- name: Make new rule in .d file
+  copy: 
+    dest: /etc/fail2ban/jail.d/defauly.conf
+    content:
+      [ssh]                                                 # название для правила
+      enabled = true                                        # быстро включение (true) или отключение (false) правило
+      port = {{ port_my }}                                  # порт целевого сервиса буквами или цифрами
+      filter = sshd                                         # фильтр (критерий поиска), который будет использоваться для поиска подозрительных действий. По сути, это имя файла из каталога /etc/fail2ban/filter.d без .conf на конце
+      action = iptables[name=sshd, port=ssh, protocol=tcp]  # действие, совершаемое в случае срабатывания правила. В квадратных скобках указаны название для правила, сетевой порт и протокол для блокирования;
+      logpath = /var/log/auth.log                           # расположение лог-файла, для поиска подозрительной активности
+      maxretry = {{ maxretry_my }}                                        # максимальное число повторений перед действием
+      findtime = {{ findtime_my }}                                       # время для отслеживания повторений вводе
+
+- name: Restart fail2ban
+  shell: systemctl restart fail2ban   
+  ignore_errors: yes 
+ 
+- name: Restart Fail2ban
+  systemd:
+    name: fail2ban
+    state: restarted
+    enabled: yes
+  ignore_errors: yes
+
+- name: Unban some IP fail2ban
+  shell: fail2ban-client set ssh unbanip {{ unbaneip_my }}
