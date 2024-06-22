@@ -7,25 +7,25 @@
 - name: Install epel-release
   yum: 
     name: epel-release
-    state: install
+    state: latest
   when: ansible_os_family == "RedHat"
 
 - name: Install fail2ban
   apt: 
     name: update
-    state: install
+    state: latest
   when: ansible_os_family == "Debian"
 
 - name: Install fail2ban
   yum: 
     name: fail2ban
-    state: install
+    state: latest
   when: ansible_os_family == "RedHat"
 
 - name: Install fail2ban
   apt: 
     name: fail2ban
-    state: install
+    state: latest
   when: ansible_os_family == "Debian"
 
 - name: Enable fail2ban
@@ -36,7 +36,7 @@
 
 - name: Make .cfg file for RedHat
   copy: 
-    dest: /etc/fail2ban/jail.d/defauly.conf
+    dest: /etc/fail2ban/jail.d/default.conf
     content:
       [DEFAULT]
       maxretry = {{ maxretry_my }}
@@ -48,7 +48,7 @@
 
 - name: Make .cfg file for Debian
   copy: 
-    dest: /etc/fail2ban/jail.d/defauly.conf
+    dest: /etc/fail2ban/jail.d/default.conf
     content:
       [DEFAULT]
       maxretry = {{ maxretry_my }}
@@ -60,16 +60,37 @@
 
 - name: Make new rule in .d file
   copy: 
-    dest: /etc/fail2ban/jail.d/defauly.conf
+    dest: /etc/fail2ban/jail.d/ssh.conf
     content:
-      [ssh]                                                 # название для правила
+      [sshd]                                                # название для правила
       enabled = true                                        # быстро включение (true) или отключение (false) правило
       port = {{ port_my }}                                  # порт целевого сервиса буквами или цифрами
       filter = sshd                                         # фильтр (критерий поиска), который будет использоваться для поиска подозрительных действий. По сути, это имя файла из каталога /etc/fail2ban/filter.d без .conf на конце
       action = iptables[name=sshd, port=ssh, protocol=tcp]  # действие, совершаемое в случае срабатывания правила. В квадратных скобках указаны название для правила, сетевой порт и протокол для блокирования;
       logpath = /var/log/auth.log                           # расположение лог-файла, для поиска подозрительной активности
-      maxretry = {{ maxretry_my }}                                        # максимальное число повторений перед действием
-      findtime = {{ findtime_my }}                                       # время для отслеживания повторений вводе
+      maxretry = {{ maxretry_my1 }}                         # максимальное число повторений перед действием
+      findtime = {{ findtime_my1 }}                         # время для отслеживания повторений вводе
+      bantime = {{ bantime_my }}                            # время в бане для превысившего значение
+
+      [sshd]                                                # название для правила
+      enabled = true                                        # быстро включение (true) или отключение (false) правило
+      port = {{ port_my }}                                  # порт целевого сервиса буквами или цифрами
+      filter = sshd                                         # фильтр (критерий поиска), который будет использоваться для поиска подозрительных действий. По сути, это имя файла из каталога /etc/fail2ban/filter.d без .conf на конце
+      action = iptables[name=sshd, port=ssh, protocol=tcp]  # действие, совершаемое в случае срабатывания правила. В квадратных скобках указаны название для правила, сетевой порт и протокол для блокирования;
+      logpath = /var/log/auth.log                           # расположение лог-файла, для поиска подозрительной активности
+      maxretry = {{ maxretry_my2 }}                         # максимальное число повторений перед действием
+      findtime = {{ findtime_my2 }}                         # время для отслеживания повторений вводе
+      bantime = {{ bantime_my }}                            # время в бане для превысившего значение
+
+      [sshd]                                                # название для правила
+      enabled = true                                        # быстро включение (true) или отключение (false) правило
+      port = {{ port_my }}                                  # порт целевого сервиса буквами или цифрами
+      filter = sshd                                         # фильтр (критерий поиска), который будет использоваться для поиска подозрительных действий. По сути, это имя файла из каталога /etc/fail2ban/filter.d без .conf на конце
+      action = iptables[name=sshd, port=ssh, protocol=tcp]  # действие, совершаемое в случае срабатывания правила. В квадратных скобках указаны название для правила, сетевой порт и протокол для блокирования;
+      logpath = /var/log/auth.log                           # расположение лог-файла, для поиска подозрительной активности
+      maxretry = {{ maxretry_my3 }}                         # максимальное число повторений перед действием
+      findtime = {{ findtime_my3 }}                         # время для отслеживания повторений вводе
+      bantime = {{ bantime_my }}                            # время в бане для превысившего значение
 
 - name: Restart fail2ban
   shell: systemctl restart fail2ban   
